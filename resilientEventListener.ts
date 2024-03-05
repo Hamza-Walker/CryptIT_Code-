@@ -1,6 +1,8 @@
 import { ResilientEventListenerArgs } from './interfaces/reslientEventListenerArgs';
+import WebSocket from "isomorphic-ws";
 import { abi } from './interfaces/abi';
-import { setupWebSocket } from './websocketUtils';
+import { connectToWebSocket } from './websocketUtils';
+import { timeouts } from './websocketUtils';
 /**
  * Creates a resilient event listener for a specified contract on an Ethereum Virtual Machine (EVM)-based network.
  * This listener uses a WebSocket connection to the EVM node specified by the rpcUrl.
@@ -17,7 +19,8 @@ import { setupWebSocket } from './websocketUtils';
  * @returns {Object} An object containing a `stop` function that can be called to stop the event listener.
  */
 
-const args: ResilientEventListenerArgs = {
+
+const exampleArgs: ResilientEventListenerArgs = {
     rpcUrl: 'ws://example.com', // Provide your RPC URL here
     contractAddress: '0x123456789...', // Provide your contract address here
     abi: abi, // Provide your contract ABI here
@@ -28,20 +31,26 @@ const args: ResilientEventListenerArgs = {
         console.log('Received event:', logData);
     }
 };
+function resilientEventListener(args: ResilientEventListenerArgs) {
+    const ws = new WebSocket(args.rpcUrl);
 
-function resilientEventListener (args: ResilientEventListenerArgs) {
-// TODO: Setup websocket connection
-	const connect = () => {
-	setupWebSocket(args);	
-	}
-	connect();
+    const connect = () => {
+        connectToWebSocket(ws, args);
+    };
 
-// TODO: Stop websocket connection
-	const stop = () => {
-	}
+    const stop = () => {
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.close();
+        }
+        if (timeouts.keepAlive) clearInterval(timeouts.keepAlive);
+        if (timeouts.ping) clearTimeout(timeouts.ping);
+    };
 
-	return  {stop} 
+    return { connect, stop };
 }
 
-resilientEventListener(args);
+
+
+const eventListener = resilientEventListener(exampleArgs);
+eventListener.connect();
 
