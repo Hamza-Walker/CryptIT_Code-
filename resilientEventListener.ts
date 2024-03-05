@@ -1,6 +1,6 @@
 import { ResilientEventListenerArgs } from './interfaces/reslientEventListenerArgs';
 import WebSocket from "isomorphic-ws";
-import { abi } from './interfaces/abi';
+import { abi } from './interfaces/abiExample';
 import { connectToWebSocket } from './websocketUtils';
 import { timeouts } from './websocketUtils';
 /**
@@ -21,13 +21,12 @@ import { timeouts } from './websocketUtils';
 
 
 const exampleArgs: ResilientEventListenerArgs = {
-    rpcUrl: 'ws://example.com', // Provide your RPC URL here
-    contractAddress: '0x123456789...', // Provide your contract address here
-    abi: abi, // Provide your contract ABI here
-    eventName: 'YourEventName', // Provide the name of the event to listen for
-    log: console.log, // Optionally, you can provide a logging function
+    rpcUrl: 'ws://example.com', 
+    contractAddress: '0x123456789...', 
+    abi: abi, 
+    eventName: 'YourEventName',
+    log: console.log, 
     callback: (logData) => {
-        // Optionally, you can provide a callback function to handle received events
         console.log('Received event:', logData);
     }
 };
