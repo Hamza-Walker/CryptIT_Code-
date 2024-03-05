@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "@typescript-eslint/parser": "^7.1.0",
+    "eslint": "^8.57.0",
+    "ts-node": "^10.9.2"
+  },
+  "dependencies": {
+    "ethers": "^6.11.1",
+    "isomorphic-ws": "^5.0.0"
+  }
+}
