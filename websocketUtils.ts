@@ -6,7 +6,6 @@ import {
 
 import { Contract } from "ethers";
 import { ResilientEventListenerArgs } from "./interfaces/reslientEventListenerArgs";
-import WebSocket from "isomorphic-ws";
 import { WebSocketRequest } from "./interfaces/webSocketRequest";
 
 export const timeouts = {
@@ -15,16 +14,14 @@ export const timeouts = {
 	reconnect: null as ReturnType<typeof setTimeout> | null,
 };
 
-export const setupWebSocket = (args: ResilientEventListenerArgs) => {
-	// TODO: Setup websocket connection
-	const ws = new WebSocket(args.rpcUrl);
+export const connectToWebSocket = (ws: WebSocket, args: ResilientEventListenerArgs) => {
 
 	ws.onopen = handleWebSocketOpen(args, ws);
-	ws.onmessage = handleWebSocketMessage(args, event);
-	ws.onerror = (error: ErrorEvent) => handleError(args, error);
-	ws.onclose = handleWebSocketClose(args);
+	ws.onmessage = (event: MessageEvent<any>) => handleWebSocketMessage(args, event);
+	ws.onerror = handleError(args);
+	ws.onclose = (event: CloseEvent) => handleWebSocketClose(ws, args);
 };
-const handleWebSocketMessage = (args: ResilientEventListenerArgs, event: any ) => {
+const handleWebSocketMessage = (args: ResilientEventListenerArgs, event: MessageEvent<any>) => {
 	const ping = buildPingMessage();
 	const request = builSubscriptionRequest(args);
 	let parsedData;
@@ -69,10 +66,7 @@ function handleSubscriptionEvent(args : ResilientEventListenerArgs, parsedData: 
     args.callback && args.callback(event);
 }
 
-const handleWebSocketOpen = (
-	args: ResilientEventListenerArgs,
-	ws: WebSocket,
-) => {
+const handleWebSocketOpen = (args: ResilientEventListenerArgs, ws: WebSocket) => (event: Event) => {
 	const request: WebSocketRequest = builSubscriptionRequest(args);
 	sendWebSocketMessage(ws, request);
 	args.log &&
@@ -80,7 +74,7 @@ const handleWebSocketOpen = (
 	startKeppAliveMechanism(ws, args);
 };
 
-const handleWebSocketClose = (args: ResilientEventListenerArgs) => {
+const handleWebSocketClose = (ws: WebSocket, args: ResilientEventListenerArgs) => (event: CloseEvent) => {
 	args.log && args.log(`[${getCurrentDateTimeString()}] WebSocket closed`);
 
 	if (timeouts.ping) clearTimeout(timeouts.ping);
@@ -89,15 +83,13 @@ const handleWebSocketClose = (args: ResilientEventListenerArgs) => {
 
 	// Reconnect when the connection is closed
 	timeouts.reconnect = setTimeout(() => {
-		setupWebSocket(args);
+		connectToWebSocket(ws,args);
 	}, ONE_SECOND);
 };
 
-const handleError = (args: ResilientEventListenerArgs, error: ErrorEvent) => {
-	args.log &&
-		args.log(
-			`[${getCurrentDateTimeString()}] WebSocket connection error: ${error}`,
-		);
+const handleError = (args: ResilientEventListenerArgs) => (event: Event) => {
+    const errorEvent = event as ErrorEvent;
+    args.log && args.log(`[${getCurrentDateTimeString()}] WebSocket connection error: ${errorEvent.message}`);
 };
 
 const builSubscriptionRequest = (args: ResilientEventListenerArgs) => {
@@ -152,7 +144,7 @@ const startKeppAliveMechanism = (
 					args.log(
 						`[${getCurrentDateTimeString()}] Ping timeout, terminating websocket connection`,
 					);
-				ws.terminate();
+				ws.close();
 			}
 		}, PING_TIMEOUT_DURATION_MS);
 
