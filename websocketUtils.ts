@@ -41,7 +41,7 @@ const handleWebSocketMessage = (args: ResilientEventListenerArgs, event: any ) =
 		if (parsedData.id === request.id) {
 			handleSubscriptionResponse(args, parsedData, subscriptionId);
 		} else if (parsedData.id === ping.id && parsedData.result === true) {
-			handlePingResponse();
+			handlePingResponse(args);
 		} else if (
 			parsedData.method === "eth_subscription" &&
 			parsedData.params.subscription === subscriptionId
@@ -56,7 +56,7 @@ function handleSubscriptionResponse(args: ResilientEventListenerArgs, parsedData
     args.log && args.log(`[${getCurrentDateTimeString()}] Subscription to event '${args.eventName}' established with subscription ID '${parsedData.result}'.`);
 }
 
-function handlePingResponse() {
+function handlePingResponse(args: ResilientEventListenerArgs) {
     args.log && args.log(`[${getCurrentDateTimeString()}] Health check complete, subscription to '${args.eventName}' is still active.`);
     if (timeouts.ping) clearInterval(timeouts.ping);
 }
