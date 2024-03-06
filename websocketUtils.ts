@@ -35,7 +35,7 @@ const handleWebSocketMessage = (args: ResilientEventListenerArgs, event: Message
 	const request = builSubscriptionRequest(args);
 	let parsedData;
 	let subscriptionId; 
-
+//TODO: consider adding a witch statement to handle different data types
 	if (typeof event.data === "string") {
 		parsedData = JSON.parse(event.data);
 	} else if (event.data instanceof ArrayBuffer) {
