@@ -3,6 +3,8 @@ import WebSocket from "isomorphic-ws";
 import { abi } from './interfaces/abiExample';
 import { connectToWebSocket } from './websocketUtils';
 import { timeouts } from './websocketUtils';
+
+
 /**
  * Creates a resilient event listener for a specified contract on an Ethereum Virtual Machine (EVM)-based network.
  * This listener uses a WebSocket connection to the EVM node specified by the rpcUrl.
@@ -20,16 +22,6 @@ import { timeouts } from './websocketUtils';
  */
 
 
-const exampleArgs: ResilientEventListenerArgs = {
-    rpcUrl: 'ws://example.com', 
-    contractAddress: '0x123456789...', 
-    abi: abi, 
-    eventName: 'YourEventName',
-    log: console.log, 
-    callback: (logData) => {
-        console.log('Received event:', logData);
-    }
-};
 function resilientEventListener(args: ResilientEventListenerArgs) {
     const ws = new WebSocket(args.rpcUrl);
 
@@ -49,6 +41,17 @@ function resilientEventListener(args: ResilientEventListenerArgs) {
 }
 
 
+
+const exampleArgs: ResilientEventListenerArgs = {
+    rpcUrl: 'ws://example.com', 
+    contractAddress: '0x123456789...', 
+    abi: abi, 
+    eventName: 'YourEventName',
+    log: console.log, 
+    callback: (logData) => {
+        console.log('Received event:', logData);
+    }
+};
 
 const eventListener = resilientEventListener(exampleArgs);
 eventListener.connect();
