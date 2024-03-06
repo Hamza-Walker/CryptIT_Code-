@@ -34,26 +34,41 @@ const handleWebSocketMessage = (args: ResilientEventListenerArgs, event: Message
 	const ping = buildPingMessage();
 	const request = builSubscriptionRequest(args);
 	let parsedData;
-	let subscriptionId; 
-//TODO: consider adding a witch statement to handle different data types
-	if (typeof event.data === "string") {
-		parsedData = JSON.parse(event.data);
-	} else if (event.data instanceof ArrayBuffer) {
-		const dataString = new TextDecoder().decode(event.data);
-		parsedData = JSON.parse(dataString);
+	let subscriptionId;
+
+	// parse event data based on its type 
+	switch (typeof event.data) {
+		
+		case "string":
+			parsedData = JSON.parse(event.data);
+			break;
+		
+		case "object":
+			if (event.data instanceof ArrayBuffer) {
+				const dataString = new TextDecoder().decode(event.data);
+				parsedData = JSON.parse(dataString);
+			}
+		break;
 	}
 
+	// handle parsed data based on its value 
 	if (parsedData) {
-		if (parsedData.id === request.id) {
-			handleSubscriptionResponse(args, parsedData, subscriptionId);
-		} else if (parsedData.id === ping.id && parsedData.result === true) {
-			handlePingResponse(args);
-		} else if (
-			parsedData.method === "eth_subscription" &&
-			parsedData.params.subscription === subscriptionId
-		) {
-			handleSubscriptionEvent(args, parsedData);
-		}
+		switch (parsedData.id) {
+			case request.id:
+				handleSubscriptionResponse(args, parsedData, subscriptionId);
+				break;	
+			case ping.id:
+				if (parsedData.result === true) {
+					handlePingResponse(args);
+				}
+				break;
+			default :
+				if (parsedData.method === "eth_subscription" &&
+					parsedData.result === subscriptionId) {
+					handleSubscriptionEvent(args, parsedData);
+					}
+				break;
+				}
 	}
 };
 
