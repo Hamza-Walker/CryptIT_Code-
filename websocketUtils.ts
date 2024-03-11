@@ -92,7 +92,7 @@ const handleWebSocketClose = (ws: WebSocket, args: ResilientEventListenerArgs) =
 
 function handleSubscriptionResponse(args: ResilientEventListenerArgs, parsedData: any, subscriptionId: any) {
     subscriptionId = parsedData.result;
-    args.log && args.log(`[${getCurrentDateTimeString()}] Subscription to event '${args.eventName}' established with subscription ID '${parsedData.result}'.`);
+    args.log && args.log(`[${getCurrentDateTimeString()}] Subscription to event '${args.eventName}' established with subscription ID '${subscriptionId}'.`);
 }
 
 function handlePingResponse(args: ResilientEventListenerArgs) {
